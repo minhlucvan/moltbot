@@ -1,0 +1,25 @@
+{
+  "name": "@moltbot/mezon",
+  "version": "2026.1.27-beta.1",
+  "type": "module",
+  "description": "Moltbot Mezon channel plugin",
+  "moltbot": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "mezon",
+      "label": "Mezon",
+      "selectionLabel": "Mezon (plugin)",
+      "docsPath": "/channels/mezon",
+      "docsLabel": "mezon",
+      "blurb": "Mezon chat platform; install the plugin to enable.",
+      "order": 66
+    },
+    "install": {
+      "npmSpec": "@moltbot/mezon",
+      "localPath": "extensions/mezon",
+      "defaultChoice": "npm"
+    }
+  }
+}
