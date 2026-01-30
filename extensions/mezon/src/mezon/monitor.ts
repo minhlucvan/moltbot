@@ -172,7 +172,14 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     );
   }
 
-  const botClient = createMezonBotClient(token);
+  const botId = account.botId?.trim();
+  if (!botId) {
+    throw new Error(
+      `Mezon bot ID missing for account "${account.accountId}" (set channels.mezon.accounts.${account.accountId}.botId).`,
+    );
+  }
+
+  const botClient = createMezonBotClient(token, botId);
   await loginMezonClient(botClient);
   const botUser = await fetchMezonBotUser(botClient);
   const botUserId = botUser?.id ?? "";
@@ -253,9 +260,14 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     const kind = channelKind(isDm, msg.clan_id);
     const chatType = channelChatType(kind);
 
-    // Resolve sender name from mentions or fall back to senderId
+    // Resolve sender name from the message's own fields, then mentions, then senderId
     const senderMention = msg.mentions?.find((m) => m.user_id === senderId);
-    const senderName = senderMention?.username?.trim() || senderId;
+    const senderName =
+      msg.username?.trim() ||
+      msg.display_name?.trim() ||
+      msg.clan_nick?.trim() ||
+      senderMention?.username?.trim() ||
+      senderId;
 
     const rawText = typeof msg.content === "string"
       ? msg.content.trim()

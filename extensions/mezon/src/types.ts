@@ -11,6 +11,8 @@ export type MezonAccountConfig = {
   enabled?: boolean;
   /** Bot token for Mezon (from Mezon Developer Portal). */
   token?: string;
+  /** Bot ID for Mezon (from Mezon Developer Portal). */
+  botId?: string;
   /** Require @mention to respond in clan channels. Default: true. */
   requireMention?: boolean;
   /** Direct message policy (pairing/allowlist/open/disabled). */

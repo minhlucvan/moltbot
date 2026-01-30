@@ -21,5 +21,9 @@
       "localPath": "extensions/mezon",
       "defaultChoice": "npm"
     }
+  },
+  "dependencies": {
+    "moltbot": "workspace:*",
+    "mezon-sdk": "^2.8.0"
   }
 }

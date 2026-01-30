@@ -9,6 +9,7 @@ export type ResolvedMezonAccount = {
   accountId: string;
   enabled: boolean;
   name?: string;
+  botId?: string;
   token?: string;
   tokenSource: MezonTokenSource;
   config: MezonAccountConfig;
@@ -76,6 +77,7 @@ export function resolveMezonAccount(params: {
     accountId,
     enabled,
     name: merged.name?.trim() || undefined,
+    botId: merged.botId?.trim() || undefined,
     token,
     tokenSource,
     config: merged,

@@ -1,4 +1,8 @@
-import type { ChannelOnboardingAdapter, MoltbotConfig, WizardPrompter } from "clawdbot/plugin-sdk";
+import type {
+  ChannelOnboardingAdapter,
+  MoltbotConfig,
+  WizardPrompter,
+} from "clawdbot/plugin-sdk";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "clawdbot/plugin-sdk";
 
 import {
@@ -6,6 +10,7 @@ import {
   resolveDefaultMezonAccountId,
   resolveMezonAccount,
 } from "./mezon/accounts.js";
+import { probeMezon } from "./mezon/probe.js";
 import { promptAccountId } from "./onboarding-helpers.js";
 
 const channel = "mezon" as const;
@@ -13,9 +18,10 @@ const channel = "mezon" as const;
 async function noteMezonSetup(prompter: WizardPrompter): Promise<void> {
   await prompter.note(
     [
-      "1) Go to https://mezon.ai/developers/applications",
-      "2) Create a bot application + copy its token",
-      "Tip: the bot must be added to any clan/channel you want it to monitor.",
+      "1) Open Mezon Developer Portal: https://mezon.ai/developers/applications",
+      "2) Create a bot application and copy its token",
+      "3) Add the bot to any clan/channel you want it to monitor",
+      "Tip: you can also set MEZON_TOKEN in your env.",
       "Docs: https://docs.molt.bot/channels/mezon",
     ].join("\n"),
     "Mezon bot token",
@@ -65,6 +71,7 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
     const hasConfigValues = Boolean(resolvedAccount.config.token);
 
     let token: string | null = null;
+    let botId: string | null = null;
 
     if (!accountConfigured) {
       await noteMezonSetup(prompter);
@@ -79,6 +86,12 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
         token = String(
           await prompter.text({
             message: "Enter Mezon bot token",
+            validate: (value) => (value?.trim() ? undefined : "Required"),
+          }),
+        ).trim();
+        botId = String(
+          await prompter.text({
+            message: "Enter Mezon bot ID",
             validate: (value) => (value?.trim() ? undefined : "Required"),
           }),
         ).trim();
@@ -106,6 +119,12 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
             validate: (value) => (value?.trim() ? undefined : "Required"),
           }),
         ).trim();
+        botId = String(
+          await prompter.text({
+            message: "Enter Mezon bot ID",
+            validate: (value) => (value?.trim() ? undefined : "Required"),
+          }),
+        ).trim();
       }
     } else {
       token = String(
@@ -114,9 +133,15 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
           validate: (value) => (value?.trim() ? undefined : "Required"),
         }),
       ).trim();
+      botId = String(
+        await prompter.text({
+          message: "Enter Mezon bot ID",
+          validate: (value) => (value?.trim() ? undefined : "Required"),
+        }),
+      ).trim();
     }
 
-    if (token) {
+    if (token && botId) {
       if (accountId === DEFAULT_ACCOUNT_ID) {
         next = {
           ...next,
@@ -126,6 +151,7 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
               ...next.channels?.mezon,
               enabled: true,
               token,
+              botId,
             },
           },
         };
@@ -143,11 +169,31 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
                   ...next.channels?.mezon?.accounts?.[accountId],
                   enabled: next.channels?.mezon?.accounts?.[accountId]?.enabled ?? true,
                   token,
+                  botId,
                 },
               },
             },
           },
         };
+      }
+    }
+
+    // Probe the token to verify it works
+    const finalAccount = resolveMezonAccount({ cfg: next, accountId });
+    const finalToken = token ?? finalAccount.token;
+    const finalBotId = botId ?? finalAccount.botId;
+    if (finalToken && finalBotId) {
+      const probe = await probeMezon(finalToken, finalBotId);
+      if (probe.ok && probe.bot) {
+        await prompter.note(
+          `Connected as ${probe.bot.username ?? probe.bot.display_name ?? "bot"} (${probe.elapsedMs}ms)`,
+          "Mezon probe",
+        );
+      } else {
+        await prompter.note(
+          `Token probe failed: ${probe.error ?? "unknown error"}. You can fix this later.`,
+          "Mezon probe",
+        );
       }
     }
 

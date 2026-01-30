@@ -1,3 +1,5 @@
+import os from "node:os";
+
 import { MezonClient } from "mezon-sdk";
 
 export type MezonBotClient = {
@@ -26,6 +28,9 @@ export type MezonMessage = {
   clan_id?: string;
   is_public?: boolean;
   mode?: number;
+  username?: string;
+  display_name?: string;
+  clan_nick?: string;
   attachments?: MezonAttachment[];
   mentions?: MezonMention[];
   references?: MezonReference[];
@@ -55,10 +60,30 @@ export type MezonReference = {
   content?: string;
 };
 
-export function createMezonBotClient(token: string): MezonBotClient {
+export function createMezonBotClient(token: string, botId: string): MezonBotClient {
   if (!token.trim()) throw new Error("Mezon bot token is required");
-  const client = new MezonClient(token.trim());
-  return { client, token: token.trim() };
+  if (!botId.trim()) throw new Error("Mezon bot ID is required");
+
+  // The mezon-sdk MessageDatabase creates a "./mezon-cache/" directory relative
+  // to process.cwd(). On Windows the gateway may start from C:\Windows\System32
+  // which is not writable. Temporarily switch CWD to the user's home directory
+  // for the synchronous MezonClient constructor.
+  const prevCwd = process.cwd();
+  try {
+    process.chdir(os.homedir());
+  } catch {
+    // ignore – original CWD may be fine
+  }
+  try {
+    const client = new MezonClient({ botId: botId.trim(), token: token.trim() });
+    return { client, token: token.trim() };
+  } finally {
+    try {
+      process.chdir(prevCwd);
+    } catch {
+      // ignore restore failure
+    }
+  }
 }
 
 export async function loginMezonClient(botClient: MezonBotClient): Promise<void> {
@@ -114,6 +139,11 @@ export async function sendMezonChannelMessage(
 
 /**
  * Send a DM to a Mezon user.
+ *
+ * Creates (or fetches) a DM channel via the SDK's ChannelManager and then
+ * sends the message through the normal channel-message path.  This avoids
+ * `clans.fetch()` which only reads from the in-memory cache — a cache that
+ * is always empty when `send.ts` creates a fresh MezonClient per send.
  */
 export async function sendMezonDM(
   botClient: MezonBotClient,
@@ -124,19 +154,23 @@ export async function sendMezonDM(
     replyToId?: string;
   },
 ): Promise<{ message_id?: string }> {
-  const content: Record<string, unknown> = { t: params.message };
-  const references =
-    params.replyToId
-      ? [{ message_ref_id: params.replyToId, ref_type: 0 }]
-      : undefined;
+  // Access the SDK's channel manager to create / retrieve a DM channel.
+  const channelManager = (botClient.client as Record<string, unknown>)
+    .channelManager as { createDMchannel(userId: string): Promise<{ channel_id?: string } | null> } | undefined;
 
-  const clan = await botClient.client.clans.fetch(params.clanId);
-  const user = await clan.users.fetch(params.userId);
-  const result = await user.sendDM(
-    content,
-    undefined, // mentions
-    undefined, // attachments
-    references,
-  );
-  return { message_id: (result as Record<string, unknown>)?.message_id as string | undefined };
+  if (!channelManager?.createDMchannel) {
+    throw new Error("Mezon SDK channelManager.createDMchannel is not available");
+  }
+
+  const dmChannel = await channelManager.createDMchannel(params.userId);
+  const channelId = dmChannel?.channel_id;
+  if (!channelId) {
+    throw new Error(`Cannot create DM channel for user ${params.userId}`);
+  }
+
+  return sendMezonChannelMessage(botClient, {
+    channelId,
+    message: params.message,
+    replyToId: params.replyToId,
+  });
 }

@@ -86,7 +86,14 @@ export async function sendMessageMezon(
 
   const target = parseMezonTarget(to);
 
-  const botClient = createMezonBotClient(token);
+  const botId = account.botId?.trim();
+  if (!botId) {
+    throw new Error(
+      `Mezon bot ID missing for account "${account.accountId}" (set channels.mezon.accounts.${account.accountId}.botId).`,
+    );
+  }
+
+  const botClient = createMezonBotClient(token, botId);
   await loginMezonClient(botClient);
 
   let message = text?.trim() ?? "";

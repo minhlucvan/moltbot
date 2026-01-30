@@ -14,6 +14,7 @@ const MezonAccountSchemaBase = z
     enabled: z.boolean().optional(),
     configWrites: z.boolean().optional(),
     token: z.string().optional(),
+    botId: z.string().optional(),
     requireMention: z.boolean().optional(),
     dmPolicy: DmPolicySchema.optional().default("pairing"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),

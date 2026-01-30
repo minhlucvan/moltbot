@@ -38,7 +38,6 @@ const meta = {
   blurb: "Mezon chat platform; install the plugin to enable.",
   systemImage: "bubble.left.and.bubble.right",
   order: 66,
-  quickstartAllowFrom: true,
 } as const;
 
 function normalizeAllowEntry(entry: string): string {
@@ -214,7 +213,11 @@ export const mezonPlugin: ChannelPlugin<ResolvedMezonAccount> = {
       if (!token) {
         return { ok: false, error: "bot token missing" };
       }
-      return await probeMezon(token, timeoutMs);
+      const botId = account.botId?.trim();
+      if (!botId) {
+        return { ok: false, error: "bot ID missing" };
+      }
+      return await probeMezon(token, botId, timeoutMs);
     },
     buildAccountSnapshot: ({ account, runtime, probe }) => ({
       accountId: account.accountId,

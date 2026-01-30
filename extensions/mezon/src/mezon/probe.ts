@@ -14,10 +14,14 @@ export type MezonProbe = {
 
 export async function probeMezon(
   token: string,
+  botId: string,
   timeoutMs = 2500,
 ): Promise<MezonProbe> {
   if (!token.trim()) {
     return { ok: false, error: "token missing" };
+  }
+  if (!botId.trim()) {
+    return { ok: false, error: "botId missing" };
   }
   const start = Date.now();
   const controller = timeoutMs > 0 ? new AbortController() : undefined;
@@ -26,7 +30,7 @@ export async function probeMezon(
     timer = setTimeout(() => controller.abort(), timeoutMs);
   }
   try {
-    const botClient = createMezonBotClient(token);
+    const botClient = createMezonBotClient(token, botId);
     await loginMezonClient(botClient);
     const bot = await fetchMezonBotUser(botClient);
     const elapsedMs = Date.now() - start;
