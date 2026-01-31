@@ -146,10 +146,9 @@ export async function sendMezonChannelMessage(
   },
 ): Promise<{ message_id?: string }> {
   const content: Record<string, unknown> = { t: params.message };
-  const references =
-    params.replyToId
-      ? [{ message_ref_id: params.replyToId, ref_type: 0 }]
-      : undefined;
+  const references = params.replyToId
+    ? [{ message_ref_id: params.replyToId, ref_type: 0 }]
+    : undefined;
 
   const channel = await botClient.client.channels.fetch(params.channelId);
   const result = await channel.send(
@@ -179,8 +178,9 @@ export async function sendMezonDM(
   },
 ): Promise<{ message_id?: string }> {
   // Access the SDK's channel manager to create / retrieve a DM channel.
-  const channelManager = (botClient.client as Record<string, unknown>)
-    .channelManager as { createDMchannel(userId: string): Promise<{ channel_id?: string } | null> } | undefined;
+  const channelManager = (botClient.client as Record<string, unknown>).channelManager as
+    | { createDMchannel(userId: string): Promise<{ channel_id?: string } | null> }
+    | undefined;
 
   if (!channelManager?.createDMchannel) {
     throw new Error("Mezon SDK channelManager.createDMchannel is not available");

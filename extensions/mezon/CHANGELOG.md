@@ -48,7 +48,7 @@
 - Allowlist support for user IDs and usernames (with @ prefix handling)
 - Mention-gating for clan/group channels (requireMention: true by default)
 - Per-account access control overrides
-- Wildcard support ("*") for open policies
+- Wildcard support ("\*") for open policies
 
 ### Capabilities
 

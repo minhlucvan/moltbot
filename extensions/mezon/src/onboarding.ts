@@ -1,8 +1,4 @@
-import type {
-  ChannelOnboardingAdapter,
-  OpenClawConfig,
-  WizardPrompter,
-} from "openclaw/plugin-sdk";
+import type { ChannelOnboardingAdapter, OpenClawConfig, WizardPrompter } from "openclaw/plugin-sdk";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
 
 import {
@@ -65,9 +61,7 @@ export const mezonOnboardingAdapter: ChannelOnboardingAdapter = {
     });
     const accountConfigured = Boolean(resolvedAccount.token);
     const allowEnv = accountId === DEFAULT_ACCOUNT_ID;
-    const canUseEnv =
-      allowEnv &&
-      Boolean(process.env.MEZON_TOKEN?.trim());
+    const canUseEnv = allowEnv && Boolean(process.env.MEZON_TOKEN?.trim());
     const hasConfigValues = Boolean(resolvedAccount.config.token);
 
     let token: string | null = null;

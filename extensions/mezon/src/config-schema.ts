@@ -33,8 +33,7 @@ const MezonAccountSchema = MezonAccountSchemaBase.superRefine((value, ctx) => {
     allowFrom: value.allowFrom,
     ctx,
     path: ["allowFrom"],
-    message:
-      'channels.mezon.dmPolicy="open" requires channels.mezon.allowFrom to include "*"',
+    message: 'channels.mezon.dmPolicy="open" requires channels.mezon.allowFrom to include "*"',
   });
 });
 
@@ -46,7 +45,6 @@ export const MezonConfigSchema = MezonAccountSchemaBase.extend({
     allowFrom: value.allowFrom,
     ctx,
     path: ["allowFrom"],
-    message:
-      'channels.mezon.dmPolicy="open" requires channels.mezon.allowFrom to include "*"',
+    message: 'channels.mezon.dmPolicy="open" requires channels.mezon.allowFrom to include "*"',
   });
 });

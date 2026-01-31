@@ -101,9 +101,7 @@ function normalizeAllowEntry(entry: string): string {
 }
 
 function normalizeAllowList(entries: Array<string | number>): string[] {
-  const normalized = entries
-    .map((entry) => normalizeAllowEntry(String(entry)))
-    .filter(Boolean);
+  const normalized = entries.map((entry) => normalizeAllowEntry(String(entry))).filter(Boolean);
   return Array.from(new Set(normalized));
 }
 
@@ -269,12 +267,16 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     const senderId = msg.sender_id;
     if (!senderId) return;
     if (senderId === botUserId) {
-      logVerboseMessage(`[DEBUG] Ignoring own message: senderId="${senderId}" matches botUserId="${botUserId}"`);
+      logVerboseMessage(
+        `[DEBUG] Ignoring own message: senderId="${senderId}" matches botUserId="${botUserId}"`,
+      );
       return;
     }
     // Extra debug to catch echo loop issue
     if (!botUserId) {
-      logVerboseMessage(`[WARNING] Received message from senderId="${senderId}" but botUserId is empty - cannot filter self-messages!`);
+      logVerboseMessage(
+        `[WARNING] Received message from senderId="${senderId}" but botUserId is empty - cannot filter self-messages!`,
+      );
     }
 
     // Determine channel kind: DM vs clan channel vs group
@@ -292,11 +294,12 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
       senderMention?.username?.trim() ||
       senderId;
 
-    const rawText = typeof msg.content === "string"
-      ? msg.content.trim()
-      : typeof msg.content === "object" && msg.content !== null
-        ? ((msg.content as Record<string, unknown>).t as string ?? "").trim()
-        : "";
+    const rawText =
+      typeof msg.content === "string"
+        ? msg.content.trim()
+        : typeof msg.content === "object" && msg.content !== null
+          ? (((msg.content as Record<string, unknown>).t as string) ?? "").trim()
+          : "";
     const dmPolicy = account.config.dmPolicy ?? "pairing";
     const defaultGroupPolicy = cfg.channels?.defaults?.groupPolicy;
     const groupPolicy = account.config.groupPolicy ?? defaultGroupPolicy ?? "allowlist";
@@ -342,7 +345,9 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
       hasControlCommand,
     });
     const commandAuthorized =
-      kind === "dm" ? dmPolicy === "open" || senderAllowedForCommands : commandGate.commandAuthorized;
+      kind === "dm"
+        ? dmPolicy === "open" || senderAllowedForCommands
+        : commandGate.commandAuthorized;
 
     if (kind === "dm") {
       if (dmPolicy === "disabled") {
@@ -356,9 +361,7 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
             id: senderId,
             meta: { name: senderName },
           });
-          logVerboseMessage(
-            `mezon: pairing request sender=${senderId} created=${created}`,
-          );
+          logVerboseMessage(`mezon: pairing request sender=${senderId} created=${created}`);
           if (created) {
             try {
               const result = await sendMessageMezon(
@@ -374,15 +377,11 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
               recentSentMessages.check(`${account.accountId}:${result.messageId}`);
               opts.statusSink?.({ lastOutboundAt: Date.now() });
             } catch (err) {
-              logVerboseMessage(
-                `mezon: pairing reply failed for ${senderId}: ${String(err)}`,
-              );
+              logVerboseMessage(`mezon: pairing reply failed for ${senderId}: ${String(err)}`);
             }
           }
         } else {
-          logVerboseMessage(
-            `mezon: drop dm sender=${senderId} (dmPolicy=${dmPolicy})`,
-          );
+          logVerboseMessage(`mezon: drop dm sender=${senderId} (dmPolicy=${dmPolicy})`);
         }
         return;
       }
@@ -397,9 +396,7 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
           return;
         }
         if (!groupAllowedForCommands) {
-          logVerboseMessage(
-            `mezon: drop group sender=${senderId} (not in groupAllowFrom)`,
-          );
+          logVerboseMessage(`mezon: drop group sender=${senderId} (not in groupAllowFrom)`);
           return;
         }
       }
@@ -446,14 +443,12 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     const wasMentioned =
       kind !== "dm" &&
       ((botUsername ? rawText.toLowerCase().includes(`@${botUsername.toLowerCase()}`) : false) ||
-        (botUserId ? msg.mentions?.some((m) => m.user_id === botUserId) ?? false : false) ||
+        (botUserId ? (msg.mentions?.some((m) => m.user_id === botUserId) ?? false) : false) ||
         core.channel.mentions.matchesMentionPatterns(rawText, mentionRegexes));
 
     const pendingBody =
       rawText ||
-      (msg.attachments?.length
-        ? `[Mezon ${msg.attachments.length === 1 ? "file" : "files"}]`
-        : "");
+      (msg.attachments?.length ? `[Mezon ${msg.attachments.length === 1 ? "file" : "files"}]` : "");
     const pendingSender = senderName;
     const recordPendingHistory = () => {
       const trimmed = pendingBody.trim();
@@ -462,14 +457,15 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
         historyMap: channelHistories,
         limit: historyLimit,
         historyKey: historyKey ?? "",
-        entry: historyKey && trimmed
-          ? {
-              sender: pendingSender,
-              body: trimmed,
-              timestamp: createTime,
-              messageId: messageId,
-            }
-          : null,
+        entry:
+          historyKey && trimmed
+            ? {
+                sender: pendingSender,
+                body: trimmed,
+                timestamp: createTime,
+                messageId: messageId,
+              }
+            : null,
       });
     };
 
@@ -484,7 +480,8 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     const shouldBypassMention =
       isControlCommand && shouldRequireMention && !wasMentioned && commandAuthorized;
     const effectiveWasMentioned = wasMentioned || shouldBypassMention;
-    const canDetectMention = Boolean(botUsername) || Boolean(botUserId) || mentionRegexes.length > 0;
+    const canDetectMention =
+      Boolean(botUsername) || Boolean(botUserId) || mentionRegexes.length > 0;
 
     if (kind !== "dm" && shouldRequireMention && canDetectMention) {
       if (!effectiveWasMentioned) {
@@ -642,17 +639,17 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
         responsePrefixContextProvider: prefixContext.responsePrefixContextProvider,
         humanDelay: core.channel.reply.resolveHumanDelayConfig(cfg, route.agentId),
         deliver: async (payload: ReplyPayload) => {
-          runtime.log?.(`[DEBUG] deliver() called: text length=${payload.text?.length ?? 0} hasMedia=${!!payload.mediaUrl}`);
+          runtime.log?.(
+            `[DEBUG] deliver() called: text length=${payload.text?.length ?? 0} hasMedia=${!!payload.mediaUrl}`,
+          );
           const mediaUrls = payload.mediaUrls ?? (payload.mediaUrl ? [payload.mediaUrl] : []);
           const text = core.channel.text.convertMarkdownTables(payload.text ?? "", tableMode);
           if (mediaUrls.length === 0) {
-            const chunkMode = core.channel.text.resolveChunkMode(
-              cfg,
-              "mezon",
-              account.accountId,
-            );
+            const chunkMode = core.channel.text.resolveChunkMode(cfg, "mezon", account.accountId);
             const chunks = core.channel.text.chunkMarkdownTextWithMode(text, textLimit, chunkMode);
-            runtime.log?.(`[DEBUG] About to send ${chunks.length > 0 ? chunks.length : 1} chunk(s) to ${to}`);
+            runtime.log?.(
+              `[DEBUG] About to send ${chunks.length > 0 ? chunks.length : 1} chunk(s) to ${to}`,
+            );
             for (const chunk of chunks.length > 0 ? chunks : [text]) {
               if (!chunk) continue;
               runtime.log?.(`[DEBUG] Sending chunk (length=${chunk.length}) to ${to}`);
@@ -703,7 +700,11 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     runtime.log?.(`[DEBUG] Reply dispatch completed for message from ${senderId}`);
     markDispatchIdle();
     if (historyKey) {
-      clearHistoryEntriesIfEnabled({ historyMap: channelHistories, historyKey, limit: historyLimit });
+      clearHistoryEntriesIfEnabled({
+        historyMap: channelHistories,
+        historyKey,
+        limit: historyLimit,
+      });
     }
   };
 
@@ -725,11 +726,12 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
     },
     shouldDebounce: (entry) => {
       if (entry.msg.attachments && entry.msg.attachments.length > 0) return false;
-      const text = typeof entry.msg.content === "string"
-        ? entry.msg.content.trim()
-        : typeof entry.msg.content === "object" && entry.msg.content !== null
-          ? ((entry.msg.content as Record<string, unknown>).t as string ?? "").trim()
-          : "";
+      const text =
+        typeof entry.msg.content === "string"
+          ? entry.msg.content.trim()
+          : typeof entry.msg.content === "object" && entry.msg.content !== null
+            ? (((entry.msg.content as Record<string, unknown>).t as string) ?? "").trim()
+            : "";
       if (!text) return false;
       return !core.channel.text.hasControlCommand(text, cfg);
     },
@@ -743,7 +745,11 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
       const combinedText = entries
         .map((entry) => {
           const c = entry.msg.content;
-          return typeof c === "string" ? c.trim() : typeof c === "object" && c !== null ? ((c as Record<string, unknown>).t as string ?? "").trim() : "";
+          return typeof c === "string"
+            ? c.trim()
+            : typeof c === "object" && c !== null
+              ? (((c as Record<string, unknown>).t as string) ?? "").trim()
+              : "";
         })
         .filter(Boolean)
         .join("\n");
@@ -762,8 +768,13 @@ export async function monitorMezonProvider(opts: MonitorMezonOpts = {}): Promise
   // Listen for incoming channel messages via the Mezon SDK event system
   botClient.client.onChannelMessage((data: unknown) => {
     const msg = data as MezonMessage;
-    const contentPreview = typeof msg?.content === 'string' ? msg.content.slice(0, 50) : JSON.stringify(msg?.content).slice(0, 50);
-    runtime.log?.(`[DEBUG] Received message: id=${msg?.message_id} from=${msg?.sender_id} content="${contentPreview}..."`);
+    const contentPreview =
+      typeof msg?.content === "string"
+        ? msg.content.slice(0, 50)
+        : JSON.stringify(msg?.content).slice(0, 50);
+    runtime.log?.(
+      `[DEBUG] Received message: id=${msg?.message_id} from=${msg?.sender_id} content="${contentPreview}..."`,
+    );
     if (!msg || !msg.message_id) return;
     debouncer.enqueue({ msg }).catch((err) => {
       runtime.error?.(`mezon handler failed: ${String(err)}`);

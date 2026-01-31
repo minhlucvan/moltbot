@@ -12,10 +12,7 @@ import {
 
 import { MezonConfigSchema } from "./config-schema.js";
 import { resolveMezonGroupRequireMention } from "./group-mentions.js";
-import {
-  looksLikeMezonTargetId,
-  normalizeMezonMessagingTarget,
-} from "./normalize.js";
+import { looksLikeMezonTargetId, normalizeMezonMessagingTarget } from "./normalize.js";
 import { mezonOnboardingAdapter } from "./onboarding.js";
 import {
   listMezonAccountIds,
@@ -114,9 +111,7 @@ export const mezonPlugin: ChannelPlugin<ResolvedMezonAccount> = {
         String(entry),
       ),
     formatAllowFrom: ({ allowFrom }) =>
-      allowFrom
-        .map((entry) => formatAllowEntry(String(entry)))
-        .filter(Boolean),
+      allowFrom.map((entry) => formatAllowEntry(String(entry))).filter(Boolean),
   },
   security: {
     resolveDmPolicy: ({ cfg, accountId, account }) => {
@@ -163,9 +158,7 @@ export const mezonPlugin: ChannelPlugin<ResolvedMezonAccount> = {
       if (!trimmed) {
         return {
           ok: false,
-          error: new Error(
-            "Delivering to Mezon requires --to <channelId|user:ID|channel:ID>",
-          ),
+          error: new Error("Delivering to Mezon requires --to <channelId|user:ID|channel:ID>"),
         };
       }
       return { ok: true, to: trimmed };

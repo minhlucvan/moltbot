@@ -22,9 +22,7 @@ export type MezonSendResult = {
   channelId: string;
 };
 
-type MezonTarget =
-  | { kind: "channel"; id: string }
-  | { kind: "user"; id: string };
+type MezonTarget = { kind: "channel"; id: string } | { kind: "user"; id: string };
 
 const DM_CLAN_ID = "0";
 
@@ -74,7 +72,9 @@ export async function sendMessageMezon(
 ): Promise<MezonSendResult> {
   const core = getCore();
   const logger = core.logging.getChildLogger({ module: "mezon" });
-  logger.info?.(`[DEBUG] sendMessageMezon called: to=${to} textLength=${text?.length ?? 0} hasExistingClient=${!!opts.botClient}`);
+  logger.info?.(
+    `[DEBUG] sendMessageMezon called: to=${to} textLength=${text?.length ?? 0} hasExistingClient=${!!opts.botClient}`,
+  );
   const cfg = core.config.loadConfig();
   const account = resolveMezonAccount({
     cfg,

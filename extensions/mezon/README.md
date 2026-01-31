@@ -9,6 +9,7 @@ Mezon chat platform plugin for OpenClaw.
 This extension adds Mezon as a messaging channel to OpenClaw. [Mezon](https://mezon.ai) is a modern team communication platform (Discord alternative) with end-to-end encryption, cross-platform support, and built-in AI capabilities.
 
 Your bot can:
+
 - Receive and send encrypted DMs
 - Participate in clan channels and threads
 - Handle media (images, audio, video, documents up to 500MB)
@@ -59,9 +60,9 @@ export MEZON_BOT_ID="your-bot-id"
 {
   channels: {
     mezon: {
-      enabled: true
-    }
-  }
+      enabled: true,
+    },
+  },
 }
 ```
 
@@ -74,9 +75,9 @@ export MEZON_BOT_ID="your-bot-id"
       enabled: true,
       token: "your-bot-token",
       botId: "your-bot-id",
-      dmPolicy: "pairing"  // Safe default: requires approval
-    }
-  }
+      dmPolicy: "pairing", // Safe default: requires approval
+    },
+  },
 }
 ```
 
@@ -100,45 +101,45 @@ openclaw gateway run
 
 ### Core Options
 
-| Option | Type | Default | Required | Description |
-|--------|------|---------|----------|-------------|
-| `enabled` | boolean | `true` | No | Enable/disable channel |
-| `token` | string | - | **Yes** | Bot token from Developer Portal |
-| `botId` | string | - | **Yes** | Bot ID from Developer Portal |
-| `dmPolicy` | string | `"pairing"` | No | `pairing` \| `allowlist` \| `open` \| `disabled` |
-| `allowFrom` | string[] | `[]` | No | DM allowlist (user IDs or usernames) |
-| `groupPolicy` | string | `"allowlist"` | No | `allowlist` \| `open` \| `disabled` |
-| `groupAllowFrom` | string[] | `[]` | No | Group allowlist (user IDs) |
-| `requireMention` | boolean | `true` | No | Require @mention in groups |
-| `name` | string | - | No | Display name for account |
+| Option           | Type     | Default       | Required | Description                                      |
+| ---------------- | -------- | ------------- | -------- | ------------------------------------------------ |
+| `enabled`        | boolean  | `true`        | No       | Enable/disable channel                           |
+| `token`          | string   | -             | **Yes**  | Bot token from Developer Portal                  |
+| `botId`          | string   | -             | **Yes**  | Bot ID from Developer Portal                     |
+| `dmPolicy`       | string   | `"pairing"`   | No       | `pairing` \| `allowlist` \| `open` \| `disabled` |
+| `allowFrom`      | string[] | `[]`          | No       | DM allowlist (user IDs or usernames)             |
+| `groupPolicy`    | string   | `"allowlist"` | No       | `allowlist` \| `open` \| `disabled`              |
+| `groupAllowFrom` | string[] | `[]`          | No       | Group allowlist (user IDs)                       |
+| `requireMention` | boolean  | `true`        | No       | Require @mention in groups                       |
+| `name`           | string   | -             | No       | Display name for account                         |
 
 ### Advanced Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `textChunkLimit` | number | `4000` | Max characters per message chunk |
-| `blockStreaming` | boolean | `false` | Disable streaming responses |
-| `blockStreamingCoalesce.minChars` | number | `1500` | Min chars before sending streamed block |
-| `blockStreamingCoalesce.idleMs` | number | `1000` | Idle milliseconds before sending block |
+| Option                            | Type    | Default | Description                             |
+| --------------------------------- | ------- | ------- | --------------------------------------- |
+| `textChunkLimit`                  | number  | `4000`  | Max characters per message chunk        |
+| `blockStreaming`                  | boolean | `false` | Disable streaming responses             |
+| `blockStreamingCoalesce.minChars` | number  | `1500`  | Min chars before sending streamed block |
+| `blockStreamingCoalesce.idleMs`   | number  | `1000`  | Idle milliseconds before sending block  |
 
 ## Access Control
 
 ### DM Policies
 
-| Policy | Behavior | Use Case |
-|--------|----------|----------|
+| Policy              | Behavior                                                 | Use Case                                        |
+| ------------------- | -------------------------------------------------------- | ----------------------------------------------- |
 | `pairing` (default) | Unknown users receive a pairing code; admin must approve | **Recommended**: Secure access for private bots |
-| `allowlist` | Only users in `allowFrom` can message | Strict team environments |
-| `open` | Anyone can message the bot | Public bots (use with caution) |
-| `disabled` | DMs are completely disabled | Channel-only bots |
+| `allowlist`         | Only users in `allowFrom` can message                    | Strict team environments                        |
+| `open`              | Anyone can message the bot                               | Public bots (use with caution)                  |
+| `disabled`          | DMs are completely disabled                              | Channel-only bots                               |
 
 ### Group Policies
 
-| Policy | Behavior | Use Case |
-|--------|----------|----------|
-| `allowlist` (default) | Only users in `groupAllowFrom` can trigger | Controlled team access |
-| `open` | Any member can trigger (mention-gating still applies) | Public channels |
-| `disabled` | Group messages are disabled | DM-only bots |
+| Policy                | Behavior                                              | Use Case               |
+| --------------------- | ----------------------------------------------------- | ---------------------- |
+| `allowlist` (default) | Only users in `groupAllowFrom` can trigger            | Controlled team access |
+| `open`                | Any member can trigger (mention-gating still applies) | Public channels        |
+| `disabled`            | Group messages are disabled                           | DM-only bots           |
 
 ### Example: Team Setup (Recommended)
 
@@ -153,9 +154,9 @@ openclaw gateway run
       allowFrom: ["alice", "@bob", "user123"],
       groupPolicy: "allowlist",
       groupAllowFrom: ["alice", "bob"],
-      requireMention: true
-    }
-  }
+      requireMention: true,
+    },
+  },
 }
 ```
 
@@ -170,9 +171,9 @@ openclaw gateway run
       botId: "${MEZON_BOT_ID}",
       dmPolicy: "open",
       groupPolicy: "open",
-      requireMention: true  // Still requires @mention in channels
-    }
-  }
+      requireMention: true, // Still requires @mention in channels
+    },
+  },
 }
 ```
 
@@ -189,32 +190,32 @@ openclaw gateway run
           token: "${MEZON_WORK_TOKEN}",
           botId: "${MEZON_WORK_BOT_ID}",
           dmPolicy: "allowlist",
-          allowFrom: ["alice", "@bob"]
+          allowFrom: ["alice", "@bob"],
         },
         personal: {
           name: "Personal Assistant",
           token: "${MEZON_PERSONAL_TOKEN}",
           botId: "${MEZON_PERSONAL_BOT_ID}",
-          dmPolicy: "pairing"
-        }
-      }
-    }
-  }
+          dmPolicy: "pairing",
+        },
+      },
+    },
+  },
 }
 ```
 
 ## Capabilities
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Direct messages | ✅ Supported | Pairing-gated by default |
-| Clan channels | ✅ Supported | Mention-gated by default |
-| Threads | ✅ Supported | Thread-aware session keys |
-| Media (images, audio, video, docs) | ✅ Supported | Up to 500MB via URL embedding |
-| Reactions | ✅ Supported | Full emoji support |
-| Streaming responses | ✅ Supported | With intelligent coalescing |
-| Typing indicators | ❌ SDK limitation | Not available |
-| Slash commands | ❌ SDK limitation | Text commands only |
+| Feature                            | Status            | Notes                         |
+| ---------------------------------- | ----------------- | ----------------------------- |
+| Direct messages                    | ✅ Supported      | Pairing-gated by default      |
+| Clan channels                      | ✅ Supported      | Mention-gated by default      |
+| Threads                            | ✅ Supported      | Thread-aware session keys     |
+| Media (images, audio, video, docs) | ✅ Supported      | Up to 500MB via URL embedding |
+| Reactions                          | ✅ Supported      | Full emoji support            |
+| Streaming responses                | ✅ Supported      | With intelligent coalescing   |
+| Typing indicators                  | ❌ SDK limitation | Not available                 |
+| Slash commands                     | ❌ SDK limitation | Text commands only            |
 
 ## Programmatic Messaging
 

@@ -46,12 +46,10 @@ function resolveAccountConfig(
   return accounts[accountId] as MezonAccountConfig | undefined;
 }
 
-function mergeMezonAccountConfig(
-  cfg: OpenClawConfig,
-  accountId: string,
-): MezonAccountConfig {
-  const { accounts: _ignored, ...base } = (cfg.channels?.mezon ??
-    {}) as MezonAccountConfig & { accounts?: unknown };
+function mergeMezonAccountConfig(cfg: OpenClawConfig, accountId: string): MezonAccountConfig {
+  const { accounts: _ignored, ...base } = (cfg.channels?.mezon ?? {}) as MezonAccountConfig & {
+    accounts?: unknown;
+  };
   const account = resolveAccountConfig(cfg, accountId) ?? {};
   return { ...base, ...account };
 }
