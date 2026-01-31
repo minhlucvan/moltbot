@@ -47,7 +47,7 @@ function normalizeAllowEntry(entry: string): string {
 
 function formatAllowEntry(entry: string): string {
   const trimmed = entry.trim();
-  if (!trimmed) return "";
+  if (!trimmed) {return "";}
   if (trimmed.startsWith("@")) {
     const username = trimmed.slice(1).trim();
     return username ? `@${username.toLowerCase()}` : "";
@@ -132,7 +132,7 @@ export const mezonPlugin: ChannelPlugin<ResolvedMezonAccount> = {
     collectWarnings: ({ account, cfg }) => {
       const defaultGroupPolicy = cfg.channels?.defaults?.groupPolicy;
       const groupPolicy = account.config.groupPolicy ?? defaultGroupPolicy ?? "allowlist";
-      if (groupPolicy !== "open") return [];
+      if (groupPolicy !== "open") {return [];}
       return [
         `- Mezon channels: groupPolicy="open" allows any member to trigger (mention-gated). Set channels.mezon.groupPolicy="allowlist" + channels.mezon.groupAllowFrom to restrict senders.`,
       ];
@@ -274,9 +274,7 @@ export const mezonPlugin: ChannelPlugin<ResolvedMezonAccount> = {
               enabled: true,
               ...(input.useEnv
                 ? {}
-                : {
-                    ...(token ? { token } : {}),
-                  }),
+                : (token ? { token } : {})),
             },
           },
         };
